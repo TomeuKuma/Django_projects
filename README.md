@@ -1,0 +1,1 @@
+Este es un proyecto en Django 5.0.1 y Python 3.13 que levanta un aplicativo web que permite al usuario hacer examenes tipo test para opositores españoles.
