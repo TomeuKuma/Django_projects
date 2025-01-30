@@ -1,71 +1,70 @@
 # examinador/management/commands/generate_csv.py
+# Se usa: python manage.py generate_csv --input_folder="preguntas_txt" --output_file="db.csv"
 
 import os
 import csv
 from django.core.management.base import BaseCommand
 
+
 class Command(BaseCommand):
-    help = 'Junta los archivos .txt individuales y convierte el resultado a formato .csv'
+    help = "Genera un archivo CSV consolidado a partir de los archivos .txt de la carpeta 'preguntas_txt'"
 
     def add_arguments(self, parser):
-        parser.add_argument('directorio_txt', type=str, help='Directorio que contiene los archivos .txt')
+        parser.add_argument(
+            '--input_folder',
+            type=str,
+            default='preguntas_txt',
+            help='Carpeta donde se encuentran los archivos .txt',
+        )
+        parser.add_argument(
+            '--output_file',
+            type=str,
+            default='preguntas_consolidadas.csv',
+            help='Nombre del archivo CSV de salida',
+        )
 
-    def handle(self, *args, **options):
-        directorio_txt = options['directorio_txt']
-        archivos_txt = [f for f in os.listdir(directorio_txt) if f.endswith('.txt')]
+    def handle(self, *args, **kwargs):
+        input_folder = kwargs['input_folder']
+        output_file = kwargs['output_file']
 
-        if not archivos_txt:
-            self.stdout.write(self.style.WARNING('No se encontraron archivos .txt en el directorio especificado.'))
+        # Validar que la carpeta de entrada existe
+        if not os.path.exists(input_folder):
+            self.stderr.write(f"Error: La carpeta '{input_folder}' no existe.")
             return
 
-        nombre_archivo_csv = 'db.csv'
-        ruta_archivo_csv = os.path.join(directorio_txt, nombre_archivo_csv)
+        # Crear el archivo CSV de salida
+        with open(output_file, mode='w', newline='', encoding='utf-8') as csvfile:
+            csv_writer = csv.writer(csvfile, quoting=csv.QUOTE_NONNUMERIC)  # Comillas para strings
 
-        try:
-            with open(ruta_archivo_csv, 'w', newline='', encoding='utf-8') as archivo_csv:
-                writer = csv.writer(archivo_csv, quoting=csv.QUOTE_ALL)
+            # Procesar cada archivo .txt en la carpeta
+            for filename in os.listdir(input_folder):
+                if filename.endswith('.txt'):
+                    file_path = os.path.join(input_folder, filename)
+                    archivo_origen = os.path.splitext(filename)[0]  # Nombre del archivo sin extensión
 
-                # Escribir datos sin encabezado
-                for archivo_txt in archivos_txt:
-                    ruta_completa_txt = os.path.join(directorio_txt, archivo_txt)
-                    try:
-                        with open(ruta_completa_txt, 'r', encoding='utf-8') as archivo_txt_actual:
-                            for linea in archivo_txt_actual:
-                                datos = linea.strip().split(',')
+                    # Leer el archivo .txt línea por línea
+                    with open(file_path, mode='r', encoding='utf-8') as txtfile:
+                        for line in txtfile:
+                            line = line.strip()  # Eliminar espacios y saltos de línea
+                            if not line:
+                                continue  # Ignorar líneas vacías
 
-                                # Manejar líneas incompletas
-                                if len(datos) < 8:
-                                    self.stdout.write(self.style.WARNING(f'Línea incompleta en {archivo_txt}: {linea.strip()}'))
-                                    continue
+                            # Separar los datos por comas
+                            datos = line.split('","')
+                            datos = [d.strip('"') for d in datos]  # Quitar las comillas iniciales y finales
 
-                                # Limpiar datos
-                                datos = [dato.strip() if dato else None for dato in datos]
+                            if len(datos) != 7:
+                                self.stderr.write(f"Advertencia: Línea inválida en '{filename}': {line}")
+                                continue
 
-                                # Convertir 'correcta' a número *y actualizar la variable correcta*
-                                respuesta_correcta = datos[5].lower()
-                                correcta_num = None  # Inicializar a None
-                                if respuesta_correcta == 'a':
-                                    correcta_num = int(1)
-                                elif respuesta_correcta == 'b':
-                                    correcta_num = int(2)
-                                elif respuesta_correcta == 'c':
-                                    correcta_num = int(3)
-                                elif respuesta_correcta == 'd':
-                                    correcta_num = int(4)
-                                else:
-                                    self.stdout.write(self.style.WARNING(f'Respuesta incorrecta en {archivo_txt}: {linea.strip()}'))
+                            # Transformar el campo "correcta"
+                            correcta_map = {"a": 1, "b": 2, "c": 3, "d": 4}
+                            correcta_transformada = correcta_map.get(datos[5].lower(), datos[5])
 
-                                datos[5] = correcta_num  # Asignar el valor numérico a la lista *antes* de escribir
+                            # Añadir el archivo origen al registro
+                            registro_csv = datos[:5] + [correcta_transformada, datos[6], archivo_origen]
 
-                                datos[7] = archivo_txt[:-4]  # Asignar normativa (sin extensión)
-                                writer.writerow(datos) # Escribir la *lista actualizada*
+                            # Escribir el registro en el CSV
+                            csv_writer.writerow(registro_csv)
 
-                    except Exception as e:
-                        self.stdout.write(self.style.ERROR(f'Error al leer el archivo {archivo_txt}: {e}'))
-                        return
-
-            self.stdout.write(self.style.SUCCESS(f'Archivo CSV "{nombre_archivo_csv}" creado exitosamente en "{directorio_txt}".'))
-
-        except Exception as e:
-            self.stdout.write(self.style.ERROR(f'Error al crear el archivo CSV: {e}'))
-            return
+        self.stdout.write(self.style.SUCCESS(f"Archivo CSV consolidado generado exitosamente: {output_file}"))
