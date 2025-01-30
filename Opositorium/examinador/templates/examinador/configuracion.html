@@ -36,6 +36,7 @@
             <h1 class="text-center text-primary">Configuración del Examen</h1>
             <form method="post" action="{% url 'iniciar_examen' %}">
                 {% csrf_token %}
+                
                 <!-- Input para número de preguntas -->
                 <div class="mb-4">
                     <label for="num_preguntas" class="form-label fs-5">Número de preguntas:</label>
@@ -45,23 +46,36 @@
                 <!-- Checkboxes para normativas -->
                 <div class="mb-4">
                     <label class="form-label fs-5">Selecciona las normativas:</label>
-                    <div class="form-check">
-                        {% for normativa in normativas %}
-                            <input class="form-check-input" type="checkbox" name="normativas" value="{{ normativa }}" id="normativa_{{ forloop.counter }}">
-                            <label class="form-check-label" for="normativa_{{ forloop.counter }}">{{ normativa }}</label>
-                        {% endfor %}
-                    </div>
+                    {% for normativa in normativas %}
+                        <div class="form-check">
+                            <input 
+                                class="form-check-input" 
+                                type="checkbox" 
+                                name="normativas" 
+                                value="{{ normativa }}" 
+                                id="normativa_{{ forloop.counter }}"
+                            >
+                            <label 
+                                class="form-check-label" 
+                                for="normativa_{{ forloop.counter }}"
+                            >
+                                {{ normativa }}
+                            </label>
+                        </div>
+                    {% endfor %}
                 </div>
-                <!-- Alerta de seleccion de normativas -->
+                
+                <!-- Alerta de selección de normativas -->
                 {% if messages %}
                     <div class="mt-3">
                         {% for message in messages %}
                             <div class="alert alert-{{ message.tags }}" role="alert">
                                 {{ message }}
-                             </div>
+                            </div>
                         {% endfor %}
                     </div>
                 {% endif %}
+                
                 <!-- Botón para empezar el test -->
                 <button type="submit" class="btn btn-primary btn-lg w-100">Empezar Test</button>
             </form>
