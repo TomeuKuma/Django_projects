@@ -8,6 +8,12 @@ from datetime import datetime
 from django.contrib import messages
 import random
 
+def index(request):
+    return render(request, 'examinador/index.html')
+
+def contacto(request):
+    return render(request, 'examinador/contacto.html')
+
 def configuracion(request):
     # Obtener todas las normativas únicas de la base de datos
     normativas = Pregunta.objects.values_list('normativa', flat=True).distinct()

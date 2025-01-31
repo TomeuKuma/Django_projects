@@ -5,6 +5,7 @@ db.sqlite3
 /static/
 /media/
 /venv/
+/Django_venv/
 /.virtualenv/
 *.log
 *.swp

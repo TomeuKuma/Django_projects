@@ -16,8 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from examinador.views import index, contacto
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('examinador/', include('examinador.urls')),
+    path('', index, name='index'),  # Página inicial
+    path('contacto/', contacto, name='contacto'),  # Página de contacto
 ]
