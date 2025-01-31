@@ -20,7 +20,7 @@ from examinador.views import index, contacto
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path('examinador/', include('examinador.urls')),
     path('', index, name='index'),  # Página inicial
+    path('examinador/', include('examinador.urls')), # Página de configuración de exámenes
     path('contacto/', contacto, name='contacto'),  # Página de contacto
 ]
