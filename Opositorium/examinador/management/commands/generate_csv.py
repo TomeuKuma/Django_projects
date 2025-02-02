@@ -1,70 +1,86 @@
 # examinador/management/commands/generate_csv.py
 # Se usa: python manage.py generate_csv --input_folder="preguntas_txt" --output_file="db.csv"
 
-import os
 import csv
+import os
+import re
+
 from django.core.management.base import BaseCommand
 
-
 class Command(BaseCommand):
-    help = "Genera un archivo CSV consolidado a partir de los archivos .txt de la carpeta 'preguntas_txt'"
-
-    def add_arguments(self, parser):
-        parser.add_argument(
-            '--input_folder',
-            type=str,
-            default='preguntas_txt',
-            help='Carpeta donde se encuentran los archivos .txt',
-        )
-        parser.add_argument(
-            '--output_file',
-            type=str,
-            default='preguntas_consolidadas.csv',
-            help='Nombre del archivo CSV de salida',
-        )
+    help = 'Procesa archivos .txt en el directorio preguntas_txt y genera un archivo preguntas_procesadas.csv'
 
     def handle(self, *args, **kwargs):
-        input_folder = kwargs['input_folder']
-        output_file = kwargs['output_file']
-
-        # Validar que la carpeta de entrada existe
-        if not os.path.exists(input_folder):
-            self.stderr.write(f"Error: La carpeta '{input_folder}' no existe.")
+        directorio_actual = os.path.join(os.getcwd(), 'preguntas_txt')
+        if not os.path.exists(directorio_actual):
+            self.stdout.write(self.style.ERROR(f"El directorio {directorio_actual} no existe."))
             return
+        
+        self.stdout.write(f"Directorio actual: {directorio_actual}")
 
-        # Crear el archivo CSV de salida
-        with open(output_file, mode='w', newline='', encoding='utf-8') as csvfile:
-            csv_writer = csv.writer(csvfile, quoting=csv.QUOTE_NONNUMERIC)  # Comillas para strings
+        archivos_txt = [archivo for archivo in os.listdir(directorio_actual) if archivo.endswith('.txt')]
+        if not archivos_txt:
+            self.stdout.write(self.style.WARNING("No se encontraron archivos .txt en el directorio preguntas_txt."))
+            return
+        
+        datos_totales = []
+        for archivo_txt in archivos_txt:
+            self.stdout.write(f"Procesando archivo: {archivo_txt}")
+            ruta_archivo = os.path.join(directorio_actual, archivo_txt)
+            datos_procesados = self.procesar_archivo_txt(ruta_archivo)
+            datos_totales.extend(datos_procesados)
+        
+        archivo_csv = os.path.join(directorio_actual, 'preguntas_test.csv')
+        self.guardar_datos_en_csv(datos_totales, archivo_csv)
 
-            # Procesar cada archivo .txt en la carpeta
-            for filename in os.listdir(input_folder):
-                if filename.endswith('.txt'):
-                    file_path = os.path.join(input_folder, filename)
-                    archivo_origen = os.path.splitext(filename)[0]  # Nombre del archivo sin extensión
+        self.stdout.write(self.style.SUCCESS(f"Se han procesado {len(archivos_txt)} archivos .txt y los datos se han guardado en {archivo_csv}."))
 
-                    # Leer el archivo .txt línea por línea
-                    with open(file_path, mode='r', encoding='utf-8') as txtfile:
-                        for line in txtfile:
-                            line = line.strip()  # Eliminar espacios y saltos de línea
-                            if not line:
-                                continue  # Ignorar líneas vacías
+    def transformar_correcta(self, valor):
+        """Transforma la letra de la respuesta correcta en un valor numérico."""
+        mapeo = {'a': 1, 'b': 2, 'c': 3, 'd': 4}
+        return mapeo.get(valor.lower(), 0)
 
-                            # Separar los datos por comas
-                            datos = line.split('","')
-                            datos = [d.strip('"') for d in datos]  # Quitar las comillas iniciales y finales
+    def procesar_archivo_txt(self, archivo_txt):
+        """Procesa un archivo .txt y devuelve una lista de datos procesados."""
+        datos_procesados = []
+        nombre_normativa = os.path.splitext(os.path.basename(archivo_txt))[0]
 
-                            if len(datos) != 7:
-                                self.stderr.write(f"Advertencia: Línea inválida en '{filename}': {line}")
-                                continue
+        with open(archivo_txt, 'r', encoding='utf-8') as file:
+            lineas = file.readlines()
 
-                            # Transformar el campo "correcta"
-                            correcta_map = {"a": 1, "b": 2, "c": 3, "d": 4}
-                            correcta_transformada = correcta_map.get(datos[5].lower(), datos[5])
+        for i, linea in enumerate(lineas, start=1):
+            try:
+                partes = re.split(r'"\s*,\s*"', linea.strip())
+                
+                if len(partes) == 7:
+                    pregunta, respuesta_a, respuesta_b, respuesta_c, respuesta_d, correcta, justificacion = partes
 
-                            # Añadir el archivo origen al registro
-                            registro_csv = datos[:5] + [correcta_transformada, datos[6], archivo_origen]
+                    pregunta = pregunta.strip('"')
+                    respuesta_a = respuesta_a.strip('"')
+                    respuesta_b = respuesta_b.strip('"')
+                    respuesta_c = respuesta_c.strip('"')
+                    respuesta_d = respuesta_d.strip('"')
+                    justificacion = justificacion.strip('"')
 
-                            # Escribir el registro en el CSV
-                            csv_writer.writerow(registro_csv)
+                    correcta_numerica = self.transformar_correcta(correcta)
 
-        self.stdout.write(self.style.SUCCESS(f"Archivo CSV consolidado generado exitosamente: {output_file}"))
+                    datos_procesados.append([
+                        pregunta, respuesta_a, respuesta_b, respuesta_c,
+                        respuesta_d, correcta_numerica, justificacion, nombre_normativa
+                    ])
+                else:
+                    self.stdout.write(self.style.WARNING(
+                        f"Formato incorrecto en la línea {i} del archivo {archivo_txt}: {linea.strip()} (Campos detectados: {len(partes)})"
+                    ))
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(
+                    f"Error al procesar la línea {i} del archivo {archivo_txt}: {linea.strip()}\nDetalles del error: {e}"
+                ))
+
+        return datos_procesados
+
+    def guardar_datos_en_csv(self, datos_totales, archivo_csv):
+        """Guarda todos los datos procesados en un archivo .csv sin encabezado."""
+        with open(archivo_csv, 'w', newline='', encoding='utf-8') as file:
+            escritor_csv = csv.writer(file)
+            escritor_csv.writerows(datos_totales)

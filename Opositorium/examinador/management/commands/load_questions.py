@@ -1,12 +1,12 @@
 # examinador/management/commands/load_questions.py
-# Se usa el comando python manage.py load_questions nombre_csv
+# Se usa el comando python manage.py load_questions preguntas_txt\preguntas_test.csv  
 
 import csv
 from django.core.management.base import BaseCommand
 from examinador.models import Pregunta
 
 class Command(BaseCommand):
-    help = "Carga preguntas desde un archivo CSV. Se usa el comando 'python manage.py load_questions nombre_csv'"
+    help = "Carga preguntas desde un archivo CSV. Se usa el comando 'python manage.py load_questions preguntas_txt\preguntas_test.csv'"
 
     def add_arguments(self, parser):
         parser.add_argument('csv_file', type=str)

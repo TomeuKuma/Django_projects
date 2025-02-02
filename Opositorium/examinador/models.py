@@ -14,3 +14,6 @@ class Pregunta(models.Model):
 
     def __str__(self):
         return self.pregunta
+
+    class Meta:
+        db_table = 'preguntas_test'
