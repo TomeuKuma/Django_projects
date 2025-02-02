@@ -3,8 +3,56 @@
 {% block title %}Contacto - Opositorium{% endblock %}
 
 {% block content %}
-<div class="text-center">
-    <h1 class="text-primary">Contacto</h1>
-    <p>Para cualquier consulta, puedes escribirnos a <strong>contacto@opositorium.com</strong></p>
+<div class="container">
+    <!-- Sección de contacto -->
+    <div class="row">
+        <!-- Información de contacto -->
+        <div class="col-md-6">
+            <h2 class="text-primary">Contacto</h2>
+            <p class="lead">¿Tienes alguna pregunta o sugerencia? ¡Nos encantaría saber de ti!</p>
+
+            <form method="POST" action="">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="name" class="form-label">Nombre</label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Tu nombre" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Correo Electrónico</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="tuemail@example.com" required>
+                </div>
+                <div class="mb-3">
+                    <label for="message" class="form-label">Mensaje</label>
+                    <textarea class="form-control" id="message" name="message" rows="5" placeholder="Escribe tu mensaje aquí..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Enviar Mensaje</button>
+            </form>
+        </div>
+
+        <!-- Información sobre el autor -->
+        <div class="col-md-6 mt-5 mt-md-0">
+            <h2 class="text-primary">Sobre el Autor</h2>
+            <p class="lead fw-bold">Bartomeu Miralles Llull</p>
+
+            <p>
+                Técnico en Administración General con amplia experiencia en la administración pública y el asesoramiento fiscal. Actualmente, ejerciendo como 
+                <strong>Coordinador de la Sección Jurídico-Econòmica</strong> en el Institut Mallorquí d'Afers Socials, gestionando expedientes de contratación pública relacionados con el área de Gent Gran.
+            </p>
+            <ul class="list-unstyled">
+                <li><strong>Consell de Mallorca</strong> (2021 - Actualidad): Cap de Secció Jurídico Econòmica</li>
+                <li><strong>SEPE</strong> (2019 - 2020): Técnico de Gestión de Prestaciones</li>
+                <li><strong>PwC España</strong> (2016 - 2017): Asesor Fiscal para grandes empresas y holdings</li>
+                <li><strong>Asesoria Roma</strong> (2013 - 2016): Asesor Fiscal para PyMEs</li>
+            </ul>
+            <p>
+                Licenciatura en <strong>Economía</strong> y en <strong>Administración y Dirección de Empresas</strong> por la Universitat Pompeu Fabra, Máster en <strong>Hacienda Pública y Derecho Tributario</strong>, un Máster en <strong>Análisi de datos masivos e Inteligencia Artificial</strong>, y un Máster en <strong>Formación al Profesorado</strong> por la Universitat de les Illes Balears.
+            </p>
+
+            <a href="mailto:bartomeumirallesllull@gmail.com" class="btn btn-outline-primary mt-3">
+                Enviar correo directo
+            </a>
+        </div>
+    </div>
 </div>
 {% endblock %}
+

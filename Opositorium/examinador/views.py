@@ -6,12 +6,33 @@ from django.db.models import F
 from .models import Pregunta
 from datetime import datetime
 from django.contrib import messages
+from django.core.mail import send_mail
+from django.http import HttpResponseRedirect
 import random
 
 def index(request):
     return render(request, 'examinador/index.html')
 
 def contacto(request):
+    return render(request, 'examinador/contacto.html')
+
+def contacto_view(request):
+    if request.method == 'POST':
+        nombre = request.POST.get('name')
+        email = request.POST.get('email')
+        mensaje = request.POST.get('message')
+
+        # Enviar el correo
+        send_mail(
+            f'Nuevo mensaje de {nombre}',
+            mensaje,
+            email,
+            ['bartomeumirallesllull@gmail.com'],
+            fail_silently=False,
+        )
+
+        return HttpResponseRedirect('/contacto/')  # Redirige tras enviar
+
     return render(request, 'examinador/contacto.html')
 
 def configuracion(request):
