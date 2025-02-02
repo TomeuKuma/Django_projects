@@ -1,6 +1,7 @@
 # examinador/models.py
 
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Pregunta(models.Model):
     pregunta = models.CharField(max_length=512)
@@ -8,7 +9,7 @@ class Pregunta(models.Model):
     respuesta2 = models.CharField(max_length=512)
     respuesta3 = models.CharField(max_length=512)
     respuesta4 = models.CharField(max_length=512)
-    correcta = models.IntegerField()  # 1, 2, 3, o 4
+    correcta = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(4)])  # 1, 2, 3, o 4
     justificacion = models.CharField(max_length=512)
     normativa = models.CharField(max_length=512)
 
