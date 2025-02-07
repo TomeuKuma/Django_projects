@@ -60,7 +60,9 @@ def iniciar_examen(request):
         num_preguntas = min(num_preguntas, total_preguntas_disponibles)
 
         # Seleccionar preguntas aleatorias
-        preguntas_seleccionadas = random.sample(list(preguntas_filtradas), num_preguntas)
+        preguntas_seleccionadas = list(preguntas_filtradas)
+        random.shuffle(preguntas_seleccionadas)
+        preguntas_seleccionadas = preguntas_seleccionadas[:num_preguntas]
 
         # Guardar las preguntas seleccionadas en la sesión
         request.session['preguntas_ids'] = [pregunta.id for pregunta in preguntas_seleccionadas]
