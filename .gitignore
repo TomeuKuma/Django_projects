@@ -1,9 +1,6 @@
 __pycache__/
 *.pyc
-db.sqlite3
 .env
-/static/
-/media/
 /venv/
 /Django_venv/
 /.virtualenv/
