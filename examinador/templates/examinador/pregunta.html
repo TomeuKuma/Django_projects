@@ -77,11 +77,11 @@
             </form>
             <!-- Botones -->
             <div class="d-flex justify-content-between">
-                <button id="anteriorBtn" class="btn btn-primary">Anterior</button>
-                <button id="comprobarBtn" class="btn btn-primary">Comprobar</button>
-                <button id="siguienteBtn" class="btn btn-primary">Siguiente</button>
+                <button class="btn btn-primary" onclick="anteriorPregunta()">Anterior</button>
+                <button class="btn btn-primary" onclick="comprobarRespuesta()">Comprobar</button>
+                <button class="btn btn-primary" onclick="siguientePregunta()">Siguiente</button>
             </div>
-            <div class="d-flex justify-content-between mt-3">
+            <div class="d-flex justify-content-between">
                 <button class="btn btn-secondary" onclick="irConfiguracion()">Ir a Configuración</button>
                 <button class="btn btn-secondary" onclick="irResultados()">Finalizar</button>
             </div>
@@ -91,84 +91,55 @@
     </div>
 
     <script>
-    window.onload = function () {
-        // Temporizador
-        const startTime = new Date('{{ request.session.hora_inicio }}');
-        function updateTimer() {
-            const now = new Date();
-            const diff = new Date(now - startTime);
-            const minutes = String(diff.getMinutes()).padStart(2, '0');
-            const seconds = String(diff.getSeconds()).padStart(2, '0');
-            document.getElementById('temporizador').textContent = `Tiempo transcurrido: ${minutes}:${seconds}`;
-        }
-        setInterval(updateTimer, 1000);
+    // Mostrar el temporizador
+    const startTime = new Date('{{ request.session.hora_inicio }}'); // Hora de inicio del examen desde la sesión
+    function updateTimer() {
+        const now = new Date();
+        const diff = new Date(now - startTime);
+        const minutes = String(diff.getMinutes()).padStart(2, '0');
+        const seconds = String(diff.getSeconds()).padStart(2, '0');
+        document.getElementById('temporizador').textContent = `Tiempo transcurrido: ${minutes}:${seconds}`;
+    }
+    setInterval(updateTimer, 1000); // Actualizar cada segundo
 
-        // Selección de elementos
-        const comprobarBtn = document.getElementById('comprobarBtn');
-        const siguienteBtn = document.getElementById('siguienteBtn');
-        const anteriorBtn = document.getElementById('anteriorBtn');
-        const respuestas = document.querySelectorAll('input[name="respuesta"]');
-        let respuestaComprobada = false; // Variable para verificar si se ha comprobado
+    // Función para retroceder
+    function anteriorPregunta() {
+        window.location.href = '/examinador/anterior/';
+    }
 
-        // Deshabilitar botones "Siguiente" y "Anterior" hasta comprobar
-        siguienteBtn.disabled = true;
-        anteriorBtn.disabled = true;
-
-        // Comprobar respuesta
-        comprobarBtn.addEventListener("click", function () {
-            const form = document.getElementById('respuestaForm');
-            const formData = new FormData(form);
-            fetch('/examinador/comprobar/', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                const feedback = document.getElementById('feedback');
-                feedback.classList.remove('d-none', 'alert-danger', 'alert-success');
-                feedback.classList.add(data.es_correcta ? 'alert-success' : 'alert-danger');
-                feedback.textContent = data.es_correcta
-                    ? `Correcto: ${data.justificacion}`
-                    : `Incorrecto: ${data.justificacion}`;
-
-                // Deshabilitar las opciones de respuesta después de comprobar
-                respuestas.forEach(input => input.disabled = true);
-
-                // Habilitar botones "Siguiente" y "Anterior"
-                siguienteBtn.disabled = false;
-                anteriorBtn.disabled = false;
-                respuestaComprobada = true;
-            });
+    // Función para comprobar la respuesta
+    function comprobarRespuesta() {
+        const form = document.getElementById('respuestaForm');
+        const formData = new FormData(form);
+        fetch('/examinador/comprobar/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            const feedback = document.getElementById('feedback');
+            feedback.classList.remove('d-none', 'alert-danger', 'alert-success');
+            feedback.classList.add(data.es_correcta ? 'alert-success' : 'alert-danger');
+            feedback.textContent = data.es_correcta
+                ? `Correcto: ${data.justificacion}`
+                : `Incorrecto: ${data.justificacion}`;
         });
+    }
 
-        // Bloquear avance si no se ha pulsado "Comprobar"
-        siguienteBtn.addEventListener("click", function (event) {
-            if (!respuestaComprobada) {
-                event.preventDefault();
-                alert("Debes comprobar tu respuesta antes de continuar.");
-            } else {
-                window.location.href = '/examinador/siguiente/';
-            }
-        });
+    // Función para avanzar a la siguiente pregunta
+    function siguientePregunta() {
+        window.location.href = '/examinador/siguiente/';
+    }
 
-        anteriorBtn.addEventListener("click", function (event) {
-            if (!respuestaComprobada) {
-                event.preventDefault();
-                alert("Debes comprobar tu respuesta antes de retroceder.");
-            } else {
-                window.location.href = '/examinador/anterior/';
-            }
-        });
-    };
-
-    // Funciones de navegación
+    // Función para volver al menú configuración
     function irConfiguracion() {
         window.location.href = '/examinador/';
     }
 
+    // Función para acabar el examen e ir a resultados
     function irResultados() {
         window.location.href = '/examinador/resultados/';
     }

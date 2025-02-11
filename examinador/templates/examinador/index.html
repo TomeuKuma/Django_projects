@@ -1,0 +1,46 @@
+ <!-- templates/examinador/index.html -->
+
+{% extends "examinador/base.html" %}
+
+{% block title %}Inicio - Opositorium{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <div class="p-5 mb-4 bg-light rounded-3 shadow">
+        <div class="container py-5">
+            <h1 class="display-4 fw-bold text-primary">Bienvenido a Opositorium</h1>
+            <p class="lead">La plataforma definitiva para preparar tus oposiciones con exámenes tipo test.</p>
+            <p class="lead">Más de <strong>1.000 preguntas</strong> actualizadas para maximizar tu preparación.</p>
+            <a href="/examinador/" class="btn btn-primary btn-lg mt-4">¡Configura tu Test Ahora!</a>
+        </div>
+    </div>
+
+    <!-- Sección de características -->
+    <div class="row mt-5">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">Variedad de Exámenes</h5>
+                    <p class="card-text">Accede a diferentes categorías de tests para diversas oposiciones.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mt-4 mt-md-0">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">Resultados al Instante</h5>
+                    <p class="card-text">Revisa tus respuestas y mejora con feedback inmediato.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mt-4 mt-md-0">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">Estadísticas de Progreso</h5>
+                    <p class="card-text">Monitorea tu avance y detecta áreas de mejora.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

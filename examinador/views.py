@@ -97,13 +97,16 @@ def comprobar_respuesta(request):
         else:
             respuestas[pregunta_id] = None  # No contestada
             request.session['no_contestadas'] += 1
+            return JsonResponse({
+                'justificacion': Pregunta.objects.get(id=pregunta_id).justificacion
+            })
 
         request.session['respuestas'] = respuestas
 
         # Retorna feedback al usuario
         return JsonResponse({
-            'es_correcta': es_correcta if respuesta else False,
-            'justificacion': pregunta.justificacion if respuesta else Pregunta.objects.get(id=pregunta_id).justificacion
+            'es_correcta': es_correcta,
+            'justificacion': pregunta.justificacion
         })
 
 # Avanza a la siguiente pregunta

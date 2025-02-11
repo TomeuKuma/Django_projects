@@ -1,0 +1,72 @@
+/* Estilos personalizados de base.html */
+body {
+    background-color: #f9f9fc;  /* Fondo claro */
+    color: #343a40;  /* Texto oscuro para buena legibilidad */
+    font-family: 'Arial', sans-serif;
+}
+.navbar {
+    background-color: #4a90e2;  /* Azul vibrante */
+}
+.navbar-brand, .nav-link {
+    color: #ffffff !important;
+    font-weight: bold;
+}
+.navbar-brand:hover, .nav-link:hover {
+    color: #d1e9ff !important;
+}
+footer {
+    background-color: #4a90e2;
+    color: white;
+    padding: 20px 0;
+}
+.navbar-brand img {
+    height: 40px;  /* Ajusta la altura del logo según sea necesario */
+    margin-right: 10px;  /* Espacio entre el logo y el texto */
+}
+
+/* Contenido actual de styles.css */
+.card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.btn {
+    border-radius: 25px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+.btn:hover {
+    transform: scale(1.05);
+}
+.btn-primary {
+    background-color: #a4c8e1; /* Azul pastel */
+    border-color: #7caad0;
+}
+.btn-primary:hover {
+    background-color: #7caad0;
+    border-color: #6498be;
+}
+.btn-secondary {
+    background-color: #f3a6a2; /* Rosa pastel */
+    border-color: #f09792;
+}
+.btn-secondary:hover {
+    background-color: #f09792;
+    border-color: #e88783;
+}
+.container {
+    margin-top: 50px;
+}
+#temporizador {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #7a7a7a;
+    margin-bottom: 15px;
+}
+.alert {
+    transition: opacity 0.5s ease;
+}
+.time-info {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #6c757d; /* Color para el texto del tiempo */
+}

@@ -1,0 +1,87 @@
+<!-- templates/examinador/configuracion.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración del Examen</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
+    <style>
+        body {
+            background-color: #f8f4fc; /* Fondo pastel */
+            color: #3c3c3c; /* Texto neutro */
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background-color: #a4c8e1; /* Azul pastel */
+            border-color: #7caad0;
+        }
+        .btn-primary:hover {
+            background-color: #7caad0;
+            border-color: #6498be;
+        }
+        .container {
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card p-5">
+            <h1 class="text-center text-primary">Configuración del Examen</h1>
+            <form method="post" action="{% url 'iniciar_examen' %}">
+                {% csrf_token %}
+                
+                <!-- Input para número de preguntas -->
+                <div class="mb-4">
+                    <label for="num_preguntas" class="form-label fs-5">Número de preguntas:</label>
+                    <input type="number" name="num_preguntas" id="num_preguntas" class="form-control" min="1" placeholder="Introduce un número" required>
+                </div>
+
+                <!-- Checkboxes para normativas -->
+                <div class="mb-4">
+                    <label class="form-label fs-5">Selecciona las normativas:</label>
+                    {% for normativa in normativas %}
+                        <div class="form-check">
+                            <input 
+                                class="form-check-input" 
+                                type="checkbox" 
+                                name="normativas" 
+                                value="{{ normativa }}" 
+                                id="normativa_{{ forloop.counter }}"
+                            >
+                            <label 
+                                class="form-check-label" 
+                                for="normativa_{{ forloop.counter }}"
+                            >
+                                {{ normativa }}
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Alerta de selección de normativas -->
+                {% if messages %}
+                    <div class="mt-3">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}" role="alert">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <!-- Botón para empezar el test -->
+                <button type="submit" class="btn btn-primary btn-lg w-100">Empezar Test</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
