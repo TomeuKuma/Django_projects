@@ -42,7 +42,10 @@
         <div class="card p-5">
             <h1 class="text-success">Resultados del examen</h1>
             <!-- Resultados del examen -->
-            <p class="fs-4">Has acertado <strong>{{ correctas }}</strong> de <strong>{{ total }}</strong> preguntas.</p>
+            <p class="fs-4">Has acertado <strong>{{ correctas }}</strong> preguntas.</p>
+            <p class="fs-4">Has fallado <strong>{{ incorrectas }}</strong> preguntas.</p>
+            <p class="fs-4">Has omitido <strong>{{ no_contestadas }}</strong> preguntas.</p>
+
             <p class="fs-4">Tu nota es <strong>{{ nota }}</strong> sobre 10.</p>
             
             <!-- Tiempo total empleado -->

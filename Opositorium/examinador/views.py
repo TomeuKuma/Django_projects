@@ -44,6 +44,7 @@ def configuracion(request):
 def iniciar_examen(request):
     if request.method == 'POST':
         num_preguntas = int(request.POST.get('num_preguntas', 10))
+        tasa_descuento = float(request.POST.get('tasa_descuento', 0))
         normativas_seleccionadas = request.POST.getlist('normativas')
         
         if not normativas_seleccionadas:
@@ -61,6 +62,7 @@ def iniciar_examen(request):
         request.session['incorrectas'] = 0
         request.session['no_contestadas'] = 0
         request.session['hora_inicio'] = datetime.now().isoformat()
+        request.session['tasa_descuento'] = tasa_descuento
         
         return redirect('pregunta')
     else:
@@ -122,7 +124,9 @@ def resultados(request):
     incorrectas = request.session.get('incorrectas', 0)
     no_contestadas = request.session.get('no_contestadas', 0)
     total = correctas + incorrectas + no_contestadas
-    nota = round((correctas / total) * 10)
+    tasa_descuento = request.session.get('tasa_descuento', 0)
+    nota = round(((correctas - (incorrectas * tasa_descuento)) / total) * 10, 2)
+
     
     hora_inicio = request.session.get('hora_inicio')
     if hora_inicio:
