@@ -23,8 +23,9 @@ footer {
     height: 40px;  /* Ajusta la altura del logo según sea necesario */
     margin-right: 10px;  /* Espacio entre el logo y el texto */
 }
-
-/* Contenido actual de styles.css */
+.navbar-brand-text {
+    font-size: 2.0em; /* Ajusta el valor según tus preferencias */
+  }
 .card {
     background-color: #ffffff;
     border-radius: 12px;

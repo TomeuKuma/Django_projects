@@ -125,7 +125,10 @@ def resultados(request):
     no_contestadas = request.session.get('no_contestadas', 0)
     total = correctas + incorrectas + no_contestadas
     tasa_descuento = request.session.get('tasa_descuento', 0)
-    nota = round(((correctas - (incorrectas * tasa_descuento)) / total) * 10, 2)
+    try:
+        nota = round(((correctas - (incorrectas * tasa_descuento)) / total) * 10, 2)
+    except ZeroDivisionError:
+        nota = 0
 
     
     hora_inicio = request.session.get('hora_inicio')
