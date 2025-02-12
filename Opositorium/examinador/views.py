@@ -9,6 +9,7 @@ from django.contrib import messages
 from django.core.mail import send_mail
 from django.http import HttpResponseRedirect
 import random
+from django.contrib.auth.decorators import login_required
 
 def index(request):
     return render(request, 'examinador/index.html')
@@ -35,12 +36,14 @@ def contacto_view(request):
 
     return render(request, 'examinador/contacto.html')
 
+@login_required
 def configuracion(request):
     # Obtener todas las normativas únicas de la base de datos
     normativas = Pregunta.objects.values_list('normativa', flat=True).distinct()
     return render(request, 'examinador/configuracion.html', {'normativas': normativas})
 
 # Inicia el examen según el número de preguntas seleccionadas
+@login_required
 def iniciar_examen(request):
     if request.method == 'POST':
         num_preguntas = int(request.POST.get('num_preguntas', 10))
@@ -69,6 +72,7 @@ def iniciar_examen(request):
         return redirect('configuracion')
 
 # Muestra la pregunta actual
+@login_required
 def pregunta(request):
     pregunta_actual = request.session.get('pregunta_actual', 0)
     preguntas_ids = request.session.get('preguntas_ids', [])
@@ -80,6 +84,7 @@ def pregunta(request):
     return render(request, 'examinador/pregunta.html', {'pregunta': pregunta})
 
 # Comprueba la respuesta del usuario
+@login_required
 def comprobar_respuesta(request):
     if request.method == 'POST':
         pregunta_id = request.POST.get('pregunta_id')
@@ -109,16 +114,19 @@ def comprobar_respuesta(request):
         })
 
 # Avanza a la siguiente pregunta
+@login_required
 def siguiente_pregunta(request):
     request.session['pregunta_actual'] += 1
     return redirect('pregunta')
 
 # Retrocede a la pregunta anterior
+@login_required
 def anterior_pregunta(request):
     request.session['pregunta_actual'] -= 1
     return redirect('pregunta')
 
 # Muestra los resultados del examen
+@login_required
 def resultados(request):
     correctas = request.session.get('correctas', 0)
     incorrectas = request.session.get('incorrectas', 0)
