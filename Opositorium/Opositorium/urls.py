@@ -23,4 +23,5 @@ urlpatterns = [
     path('', index, name='index'),  # Página inicial
     path('examinador/', include('examinador.urls')), # Página de configuración de exámenes
     path('contacto/', contacto, name='contacto'),  # Página de contacto
+    path('usuarios/', include('usuarios.urls')),  # Incluye las rutas de autenticación
 ]

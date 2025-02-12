@@ -27,7 +27,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['urithen.pythonanywhere.com',
                  '127.0.0.1']
-#ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -39,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "examinador",
+    "usuarios",
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,38 @@
+{% extends 'examinador/base.html' %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="card shadow p-4 w-50">
+        <h2 class="text-center text-primary mb-4">Registrate</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Iterar sobre los campos del formulario -->
+            {% for field in form %}
+                <div class="mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label text-primary fw-bold">{{ field.label }}</label>
+                    <input 
+                        type="{{ field.field.widget.input_type }}" 
+                        name="{{ field.name }}" 
+                        id="{{ field.id_for_label }}" 
+                        class="form-control"
+                        required
+                    >
+                    {% if field.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ field.errors|striptags }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            
+            <button type="submit" class="btn btn-primary w-100">Registrarse</button>
+        </form>
+
+        <div class="text-center mt-3">
+            <p>¿Ya tienes cuenta? <a href="{% url 'login' %}" class="text-primary fw-bold">Inicia sesión aquí</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
