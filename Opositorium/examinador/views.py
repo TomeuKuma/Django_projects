@@ -1,15 +1,14 @@
 # examinador/views.py
 
+import random
+from datetime import datetime
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from django.db.models import F
-from .models import Pregunta
-from datetime import datetime
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.http import HttpResponseRedirect
-import random
 from django.contrib.auth.decorators import login_required
+from .models import Pregunta, ErrorReport
 
 def index(request):
     return render(request, 'examinador/index.html')
@@ -124,6 +123,26 @@ def siguiente_pregunta(request):
 def anterior_pregunta(request):
     request.session['pregunta_actual'] -= 1
     return redirect('pregunta')
+
+# Permite al usuario poner un aviso de error detectado en una pregunta
+@login_required
+def reportar_error(request):
+    if request.method == "POST":
+        pregunta_id = request.POST.get('pregunta_id')
+        comentario = request.POST.get('comentario', '').strip()
+
+        try:
+            pregunta = Pregunta.objects.get(id=pregunta_id)
+            ErrorReport.objects.create(
+                pregunta=pregunta,
+                usuario=request.user,
+                comentario=comentario
+            )
+            return JsonResponse({"success": True, "message": "Error reportado correctamente."})
+        except Pregunta.DoesNotExist:
+            return JsonResponse({"success": False, "message": "Pregunta no encontrada."})
+
+    return JsonResponse({"success": False, "message": "Solicitud inválida."})
 
 # Muestra los resultados del examen
 @login_required

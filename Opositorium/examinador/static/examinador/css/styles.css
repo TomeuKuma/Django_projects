@@ -24,7 +24,7 @@ footer {
     margin-right: 10px;  /* Espacio entre el logo y el texto */
 }
 .navbar-brand-text {
-    font-size: 2.0em; /* Ajusta el valor según tus preferencias */
+    font-size: 1.5em; /* Ajusta el valor según tus preferencias */
   }
 .card {
     background-color: #ffffff;
@@ -53,6 +53,10 @@ footer {
 .btn-secondary:hover {
     background-color: #f09792;
     border-color: #e88783;
+}
+.btn-tertiary {
+    background-color: #54ec6d; /* Verde pastel */
+    border-color: #2c910e;
 }
 .container {
     margin-top: 50px;

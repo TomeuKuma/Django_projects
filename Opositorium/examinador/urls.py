@@ -11,4 +11,5 @@ urlpatterns = [
     path('resultados/', views.resultados, name='resultados'),
     path('siguiente/', views.siguiente_pregunta, name='siguiente_pregunta'),
     path('anterior/', views.anterior_pregunta, name='anterior_pregunta'),
+    path('reportar_error/', views.reportar_error, name='reportar_error'),
 ]

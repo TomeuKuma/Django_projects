@@ -41,6 +41,14 @@
             background-color: #f09792;
             border-color: #e88783;
         }
+        .btn-tertiary {
+            background-color:rgb(130, 236, 148); /* Verde pastel */
+            border-color: #2c910e;
+        }
+        .btn-tertiary:hover {
+            background-color:rgb(130, 236, 148);
+            border-color: #2c910e;
+        }
         .container {
             margin-top: 50px;
         }
@@ -80,16 +88,38 @@
             </form>
             <!-- Botones -->
             <div class="d-flex justify-content-between">
-                <button id="anteriorBtn" class="btn btn-primary">Anterior</button>
-                <button id="comprobarBtn" class="btn btn-primary">Comprobar</button>
-                <button id="siguienteBtn" class="btn btn-primary">Siguiente</button>
+                <button id="anteriorBtn" class="btn btn-primary">⤆ Anterior</button>
+                <button id="comprobarBtn" class="btn btn-tertiary">Verificar respuesta ❓</button>
+                <button id="siguienteBtn" class="btn btn-primary">Siguiente ⤇</button>
             </div>
             <div class="d-flex justify-content-between mt-3">
-                <button class="btn btn-secondary" onclick="irConfiguracion()">Ir a Configuración</button>
-                <button class="btn btn-secondary" onclick="irResultados()">Finalizar</button>
+                <button class="btn btn-secondary" onclick="irConfiguracion()">✎ Ir a Configuración</button>
+                <button id="abrirModalError" class="btn btn-danger">Informar error ❗</button>
+                <button class="btn btn-secondary" onclick="irResultados()">Finalizar examen ☑</button>
             </div>
             <!-- Feedback -->
             <div id="feedback" class="alert mt-4 d-none"></div>
+        </div>
+    </div>
+
+    <!-- Modal para reportar error -->
+    <div class="modal fade" id="modalError" tabindex="-1" aria-labelledby="modalErrorLabel" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="modalErrorLabel">Reportar error en la pregunta</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            <p>Si encontraste un error en esta pregunta, por favor descríbelo brevemente.</p>
+            <textarea id="comentarioError" class="form-control" rows="3" placeholder="Describe el problema..."></textarea>
+            <input type="hidden" id="preguntaId" value="{{ pregunta.id }}">
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-danger" id="enviarError">Enviar reporte</button>
+            </div>
+        </div>
         </div>
     </div>
 
@@ -176,6 +206,44 @@
         window.location.href = '/examinador/resultados/';
     }
     </script>
+
+    <script>
+    document.getElementById("abrirModalError").addEventListener("click", function() {
+        var modal = new bootstrap.Modal(document.getElementById("modalError"));
+        modal.show();
+    });
+    
+    document.getElementById("enviarError").addEventListener("click", function() {
+        const preguntaId = document.getElementById("preguntaId").value;
+        const comentario = document.getElementById("comentarioError").value.trim();
+    
+        fetch("/examinador/reportar_error/", {
+            method: "POST",
+            body: new URLSearchParams({
+                'pregunta_id': preguntaId,
+                'comentario': comentario
+            }),
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/x-www-form-urlencoded"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            if (data.success) {
+                var modal = bootstrap.Modal.getInstance(document.getElementById("modalError"));
+                modal.hide();
+            }
+        })
+        .catch(error => {
+            console.error("Error al reportar:", error);
+            alert("Hubo un problema al reportar el error.");
+        });
+    });
+    </script>
+    
+
 </body>
 </html>
 
