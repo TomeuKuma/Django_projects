@@ -48,14 +48,15 @@
             <p class="fs-4">Has acertado <strong>{{ correctas }}</strong> preguntas.</p>
             <p class="fs-4">Has fallado <strong>{{ incorrectas }}</strong> preguntas.</p>
             <p class="fs-4">Has omitido <strong>{{ no_contestadas }}</strong> preguntas.</p>
-
             <p class="fs-4">Tu nota es <strong>{{ nota }}</strong> sobre 10.</p>
-            
             <!-- Tiempo total empleado -->
             <p class="time-info">Tiempo empleado: <strong>{{ tiempo_total }}</strong></p>
-            
             <!-- Botón para volver a empezar -->
             <a href="/examinador/" class="btn btn-primary btn-lg mt-3">Volver a empezar</a>
+            <!-- Botón para volver a intentar las preguntas no acertadas -->
+            {% if incorrectas > 0 or no_contestadas > 0 %}
+            <a href="{% url 'reintentar_falladas' %}" class="btn btn-danger btn-lg mt-3">Reintentar no acertadas</a>
+            {% endif %}
         </div>
     </div>
 </body>

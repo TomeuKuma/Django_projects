@@ -176,3 +176,24 @@ def resultados(request):
         'nota': nota,
         'tiempo_total': tiempo_total
     })
+
+# Lógica del botón para reintentar preguntas falladas o no contestadas
+@login_required
+def reintentar_falladas(request):
+    respuestas = request.session.get('respuestas', {})
+
+    # Filtrar solo preguntas que fueron incorrectas o no contestadas
+    preguntas_falladas = [int(pid) for pid, correcta in respuestas.items() if correcta is False or correcta is None]
+
+    if not preguntas_falladas:
+        messages.warning(request, "No hay preguntas falladas para reintentar.")
+        return redirect('resultados')
+
+    # Reiniciar sesión con las preguntas falladas
+    request.session['preguntas_ids'] = preguntas_falladas
+    request.session['pregunta_actual'] = 0
+    request.session['correctas'] = 0
+    request.session['incorrectas'] = 0
+    request.session['no_contestadas'] = 0
+
+    return redirect('pregunta')
