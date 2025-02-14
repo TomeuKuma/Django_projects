@@ -25,7 +25,14 @@ footer {
 }
 .navbar-brand-text {
     font-size: 1.5em; /* Ajusta el valor según tus preferencias */
-  }
+}
+.navbar-nav-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    gap: 2rem;
+}
 .card {
     background-color: #ffffff;
     border-radius: 12px;

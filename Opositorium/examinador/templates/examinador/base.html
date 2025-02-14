@@ -26,15 +26,22 @@
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <ul class="navbar-nav">
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav navbar-nav-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="/examinador/">Exámenes</a>
+                        <a class="nav-link" href="/examinador/">Hacer Test</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/boib_scraper/anuncios">Anuncios BOIB</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/contacto/">Contacto</a>
                     </li>
+                </ul>
+            </div>        
 
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav navbar-nav-center">
                     <!-- Mostrar usuario si está autenticado -->
                     {% if user.is_authenticated %}
                         <li class="nav-item dropdown">

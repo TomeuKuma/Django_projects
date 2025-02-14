@@ -1,11 +1,15 @@
-from django.shortcuts import render
+# boib_scraper/views.py
 
 import requests
 import datetime
+import warnings
 import pandas as pd
 from bs4 import BeautifulSoup
 from bs4 import XMLParsedAsHTMLWarning
-import warnings
+from django.db import models
+from django.shortcuts import render
+from django.utils.timezone import now, timedelta
+from .models import AnuncioBoib
 
 warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
 
@@ -72,7 +76,8 @@ class BulletinScraper:
                       'Nº Registro': self.register_list,
                       'Nº URL': self.url_number_list}
         self.data = pd.DataFrame(data=list_merge)
-        pd.set_option('display.max_columns', None)
+        #pd.set_option('display.max_columns', None)
+        return self.data
 
     def make_json(self):
         """Crea un json con cabeceras desde los datos guardados
@@ -98,7 +103,7 @@ class BoibScraper(BulletinScraper):
     """ Clase con los atributos y funciones específicas para
     realizar scraping sobre el Boletin Oficial de les Illes Balears.
     Se le debe pasar el parámetro 'url_id' con formato 'numero'"""
-    def __init__(self, url_id='10140'):
+    def __init__(self, url_id='10140'): #el mas antiguo es '10140'
         super().__init__(url_id)
         self.url = 'https://www.caib.es/eboibfront/es/2020/' + str(url_id) + '/seccio-ii-autoritats-i-personal/473'
         self.current_bulletin_id = self.current_bulletin_id()
@@ -176,7 +181,7 @@ class BoibScraper(BulletinScraper):
         soup = BeautifulSoup(page.content, 'lxml')
         block_2 = soup.find_all('ul', {'class': 'entitats'})
         tester = soup.find_all('ul', {'class': 'llistat'})
-
+        
         # Comprobamos que existe la sección primera del apartado de nombramientos y autoridades:
         try:
             # Si existe la sección primera, instanciamos la sección segunda
@@ -196,8 +201,10 @@ class BoibScraper(BulletinScraper):
                 # Si no existe la sección primera ni segunda:
                 else:
                     print('No hay oposiciones/convocatorias en el BOIB con URL: ', self.url)
-            self.make_dataframe()
+            df = self.make_dataframe()
+            #self.make_dataframe()
             self.make_json()
+            return df 
         except:
             print('No existe el BOIB con URL: ', self.url)
 
@@ -212,8 +219,80 @@ class BoibScraper(BulletinScraper):
         link_list = [link["href"].split('/')[-2] for link in links]
         return link_list[0]
     
+    def scrape_boib(self):
+        print(f'🔎 Intentando rascar datos de {self.url_id}')
+        # Aquí pones la lógica de scraping
+        print(f'🔍 Datos obtenidos: {self.url}')
+    
+def dataframe_to_db(df):
+    """
+    Guarda un DataFrame en la base de datos sin duplicar registros existentes.
+    Usa 'numero_url' como identificador único.
+    """
+    # Obtener los valores únicos de 'numero_url' ya almacenados en la BD
+    urls_existentes = set(AnuncioBoib.objects.values_list("numero_url", flat=True))
+    
+    if df is None or df.empty:
+        print(f'el BOIB no existe')
+    
+    else:
+        nuevos_anuncios = [
+            AnuncioBoib(
+                url_id=row["URL_id"],
+                fecha=pd.to_datetime(row["Fecha"]).date(),
+                boletin=row["Boletín"],
+                numero_boletin=row["Número"],
+                administracion=row["Administración"],
+                entidad=row["Entidad"],
+                texto_resolucion=row["Resolución"],
+                link_pdf=row["PDF"],
+                link_html=row["HTML"],
+                link_xml=row["XML"],
+                numero_registro=row["Nº Registro"],
+                numero_url=row["Nº URL"],  # Clave única para evitar duplicados
+            )
+            for _, row in df.iterrows() if row["Nº URL"] not in urls_existentes
+        ]
 
-def index(request):
-    return render(request, 'boib_scraper/index.html', {
-        'texto': current_bulletin_id(),
-    })
+        if nuevos_anuncios:
+            AnuncioBoib.objects.bulk_create(nuevos_anuncios)  # Inserta solo los nuevos
+
+        return f"Se han insertado {len(nuevos_anuncios)} nuevos registros."
+
+def get_max_url_id():
+    """
+    Devuelve el valor máximo de 'url_id' en la base de datos (el último boletín guardado en db).
+    Si la tabla está vacía, retorna 12036.
+    """
+    max_url_id = AnuncioBoib.objects.aggregate(max_id=models.Max("url_id"))["max_id"]
+    return max_url_id if max_url_id is not None else '12035'
+
+def update_db():
+    current_id = int(current_bulletin_id())
+    max_url_id = int(get_max_url_id()) 
+    print('El ultimo BOIB publicado es:', current_id)
+    print('El ultimo BOIB guardado en DB es:', max_url_id)
+    if current_id > max_url_id:
+        while current_id > max_url_id:
+            print(f'Actualizando BOIB: {str(max_url_id + 1)}')
+            boib = BoibScraper(str(max_url_id + 1))
+            df = boib.get_data()
+            if df is None: 
+                print('BOIB inexistente')
+            else:
+                dataframe_to_db(df)
+                print(f'BOIB {max_url_id + 1} guardado con éxito')
+            max_url_id += 1
+        return f"BD actualizada! ID del último BOIB: {str(max_url_id) + 1}"
+
+def anuncios_recientes(request):
+    """Actualiza la base de datos y la vuelca en una tabla que se renderiza en
+    'boib_scraper/anuncios.html'
+    """
+    #Actualiza la base de datos
+    update_db()
+    # Obtener la fecha de hace 20 días
+    fecha_limite = now().date() - timedelta(days=30)
+    # Filtrar los anuncios de los últimos 20 días y ordenarlos por fecha descendente
+    anuncios = AnuncioBoib.objects.filter(fecha__gte=fecha_limite).order_by('-fecha')
+    return render(request, 'boib_scraper/anuncios.html', {'anuncios': anuncios})
