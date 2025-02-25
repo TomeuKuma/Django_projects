@@ -40,6 +40,7 @@ class BulletinScraper:
         self.pdf_link_list = []
         self.html_link_list = []
         self.xml_link_list = []
+        self.text_list = []
         self.url_number_list = []
         self.data = pd.DataFrame()
         self.json_list = []
@@ -56,6 +57,7 @@ class BulletinScraper:
         self.pdf_link_list = []
         self.html_link_list = []
         self.xml_link_list = []
+        self.text_list = []
         self.url_number_list = []
         self.data = pd.DataFrame()
         self.json_list = []
@@ -73,6 +75,7 @@ class BulletinScraper:
                       'PDF': self.pdf_link_list,
                       'HTML': self.html_link_list,
                       'XML': self.xml_link_list,
+                      'Texto': self.text_list,
                       'Nº Registro': self.register_list,
                       'Nº URL': self.url_number_list}
         self.data = pd.DataFrame(data=list_merge)
@@ -94,6 +97,7 @@ class BulletinScraper:
                           'PDF': self.pdf_link_list[element],
                           'HTML': self.html_link_list[element],
                           'XML': self.xml_link_list[element],
+                          'Texto': self.text_list[element],
                           'N_Registro': self.register_list[element],
                           'N_URL': self.url_number_list[element]}
             self.json_list.append(merged_ele)
@@ -124,7 +128,14 @@ class BoibScraper(BulletinScraper):
 
                 elif link['class'] == ['html']:
                     full_link = link['href']
+                    # Link HMTL
                     self.html_link_list.append(full_link)
+                    page = requests.get(full_link)
+                    soup = BeautifulSoup(page.content, 'lxml')
+                    text = str(soup.find('div', {'id': 'contenidoEdicto'}).get_text())
+                    text_cleaned = ' '.join(text.split())[:10000]
+                    # Texto anuncio (limitado a 10000 carácteres)
+                    self.text_list.append(text_cleaned)
 
                 elif link['class'] == ['rdf']:
                     full_link = link['href']
@@ -133,6 +144,7 @@ class BoibScraper(BulletinScraper):
 
                     # Link XML
                     self.xml_link_list.append(full_link)
+
                     # Fecha
                     publication_date = str(soup.find_all('dc:date')[0]).replace('<dc:date>', '').replace('</dc:date>',
                                                                                                          '')
@@ -248,6 +260,7 @@ def dataframe_to_db(df):
                 link_pdf=row["PDF"],
                 link_html=row["HTML"],
                 link_xml=row["XML"],
+                texto_completo=row["Texto"],
                 numero_registro=row["Nº Registro"],
                 numero_url=row["Nº URL"],  # Clave única para evitar duplicados
             )
@@ -283,7 +296,7 @@ def update_db():
                 dataframe_to_db(df)
                 print(f'BOIB {max_url_id + 1} guardado con éxito')
             max_url_id += 1
-        return f"BD actualizada! ID del último BOIB: {str(max_url_id) + 1}"
+        return f"BD actualizada! ID del último BOIB: {str(max_url_id + 1)}"
 
 def anuncios_recientes(request):
     """Actualiza la base de datos y la vuelca en una tabla que se renderiza en
@@ -291,6 +304,8 @@ def anuncios_recientes(request):
     """
     #Actualiza la base de datos
     update_db()
+    #boib = BoibScraper().get_data()
+    #print(boib)
     # Obtener la fecha de hace 20 días
     fecha_limite = now().date() - timedelta(days=30)
     # Filtrar los anuncios de los últimos 20 días y ordenarlos por fecha descendente

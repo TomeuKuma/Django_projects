@@ -1,0 +1,128 @@
+{% extends "examinador/base.html" %}
+{% block content %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anuncios BOIB</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <style>
+        h2 { color: #007bff; }
+        table td, table th { text-align: center; vertical-align: middle; }
+        .anuncio-col { text-align: left !important; }
+        .btn-icon { border: none; background: none; font-size: 1.5rem; color: #007bff; }
+        .btn-icon:hover { color: #0056b3; }
+        .filter-btn { margin: 5px; padding: 8px 15px; border-radius: 20px; border: 1px solid #007bff; background-color: #007bff; color: white; cursor: pointer; transition: all 0.3s ease; }
+        .filter-btn.active { background-color: #0056b3; }
+        .filter-btn.inactive { background-color: white; color: #007bff; }
+        .checkbox-group { display: flex; flex-wrap: wrap; justify-content: center; margin-bottom: 10px; }
+        .checkbox-group label { margin: 0 10px; font-weight: bold; }
+    </style>
+</head>
+<body class="container mt-4">
+    <h2 class="text-center mb-4">Convocatorias empleo público BOIB</h2>
+
+    <!-- Botones de filtro por Isla -->
+    <div class="text-center mb-3">
+        <button class="filter-btn active" data-isla="Mallorca">Mallorca</button>
+        <button class="filter-btn active" data-isla="Menorca">Menorca</button>
+        <button class="filter-btn active" data-isla="Ibiza">Ibiza</button>
+        <button class="filter-btn active" data-isla="Formentera">Formentera</button>
+        <button class="filter-btn active" data-isla="Indefinido">Indefinido</button>
+    </div>
+
+    <!-- Checkboxes de filtro por Tipo de Proceso -->
+    <div class="checkbox-group">
+        <label><input type="checkbox" class="filter-checkbox" value="Oposición" checked> Oposición</label>
+        <label><input type="checkbox" class="filter-checkbox" value="Concurso de méritos" checked> Concurso de méritos</label>
+        <label><input type="checkbox" class="filter-checkbox" value="Concurso-Oposición" checked> Concurso-Oposición</label>
+        <label><input type="checkbox" class="filter-checkbox" value="Comisión de servicios" checked> Comisión de servicios</label>
+        <label><input type="checkbox" class="filter-checkbox" value="Concurso de traslados" checked> Concurso de traslados</label>
+    </div>
+
+    <table id="anunciosTable" class="table table-striped table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Fecha publicacion</th>
+                <th>Entidad</th>
+                <th>Isla</th>
+                <th>Trabajo</th>
+                <th>Proceso Selectivo</th>
+                <th>Tipo</th>
+                <th>Formación</th>
+                <th>Catalán</th>
+                <th>Final de plazo</th>
+                <th>Enlace</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for anuncio in anuncios %}
+            {% if anuncio.fase_proceso == "Convocatoria" %}
+            <tr data-isla="{{ anuncio.isla }}" data-proceso="{{ anuncio.tipo_proceso }}">
+                <td data-order="{{ anuncio.fecha_publicacion|date:"Ymd" }}">{{ anuncio.fecha_publicacion|date:"d/m/Y" }}</td>
+                <td>{{ anuncio.entidad_convocante }}</td>
+                <td>{{ anuncio.isla }}</td>
+                <td>{{ anuncio.cuerpo_trabajo|join:", " }}</td>
+                <td>{{ anuncio.tipo_proceso }}</td>
+                <td>{{ anuncio.tipo_turno }}</td>
+                <td>{{ anuncio.requisitos.formacion|join:", "  }}</td>
+                <td>{{ anuncio.requisitos.catalan }}</td>
+                <td>{{ anuncio.fecha_maxima_presentacion|date:"d/m/Y" }}</td>
+                <td>
+                    <a href="{{ anuncio.link_html }}" target="_blank" class="btn-icon">
+                        <i class="bi bi-link-45deg"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        $(document).ready(function() {
+            var table = $('#anunciosTable').DataTable({
+                "pageLength": 100,
+                "order": [[0, "desc"]],
+                "language": {
+                    "search": "Filtrar:",
+                    "lengthMenu": "Mostrar _MENU_ registros por página",
+                    "zeroRecords": "No se encontraron resultados",
+                    "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                    "infoEmpty": "No hay registros disponibles",
+                    "infoFiltered": "(filtrado de _MAX_ registros totales)",
+                    "paginate": { "first": "Primero", "last": "Último", "next": "Siguiente", "previous": "Anterior" }
+                }
+            });
+    
+            // Filtro por Isla
+            $(".filter-btn").click(function() {
+                $(this).toggleClass("active inactive");
+    
+                var selectedIslas = $(".filter-btn.active").map(function() {
+                    return $(this).data("isla");
+                }).get();
+    
+                table.column(2).search(selectedIslas.join("|"), true, false).draw();
+            });
+    
+            // Filtro por Tipo de Proceso (coincidencia exacta)
+            $(".filter-checkbox").change(function() {
+                var selectedProcesos = $(".filter-checkbox:checked").map(function() {
+                    return "^" + $(this).val() + "$"; // Agrega ^ y $ para coincidencia exacta
+                }).get();
+    
+                table.column(4).search(selectedProcesos.join("|"), true, false).draw();
+            });
+        });
+    </script>
+</body>
+</html>
+{% endblock %}

@@ -17,6 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from examinador.views import index, contacto
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -25,4 +27,7 @@ urlpatterns = [
     path('contacto/', contacto, name='contacto'),  # Página de contacto
     path('usuarios/', include('usuarios.urls')),  # Incluye las rutas de autenticación
     path('boib_scraper/', include('boib_scraper.urls')), # Página inicial de boib_scraper
+    path('procesador_IA/', include('procesador_IA.urls')), # Página inicial de boib_scraper
 ]
+
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
